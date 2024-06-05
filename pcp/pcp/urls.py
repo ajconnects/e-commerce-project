@@ -23,6 +23,7 @@ from api.views import *
 
 router = DefaultRouter()
 router.register(r'users', UserViewSet)
+router.register(r'categories', CategoryViewSet)
 router.register(r'programmer_profiles', ProgrammerProfileViewSet)
 router.register(r'client_profiles', ClientProfileViewSet)
 router.register(r'bookings', BookingViewSet)
@@ -40,5 +41,6 @@ router.register(r'calendar_integrations', CalendarIntegrationViewSet)
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("", include(router.urls)),
+    path("api/", include(router.urls)),
+    path("", include('api.urls')),
 ]

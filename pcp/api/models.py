@@ -2,10 +2,19 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 
 # Create your models here.
+class Category(models.Model):
+    name = models.CharField(max_length=255, unique=True)
+
+    def __str__(self):
+        return self.name
+
+
 class User(AbstractUser):
     is_programmer = models.BooleanField(default=False)
     is_client = models.BooleanField(default=False)
     phone_number = models.CharField(max_length=15, blank=True, null=True)
+    email = models.EmailField()
+    categories = models.ManyToManyField(Category, related_name='programmers', blank=True)
     profile_picture = models.ImageField(upload_to='profile_pictures/', blank=True, null=True)
 
 class ProgrammerProfile(models.Model):
@@ -23,6 +32,7 @@ class ProgrammerProfile(models.Model):
 
 class ClientProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='client_profile')
+    categories = models.ManyToManyField(Category, related_name='client_profiles')
     company_name = models.CharField(max_length=255, blank=True, null=True)
     bio = models.TextField(blank=True, null=True)
     website = models.URLField(blank=True, null=True)

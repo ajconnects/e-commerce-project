@@ -1,10 +1,17 @@
+from typing import Any
 from rest_framework import viewsets
+from django.views.generic import TemplateView, CreateView
 from .models import *
 from .serializer import *
+from .forms import *
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
+
+class CategoryViewSet(viewsets.ModelViewSet):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
 
 class ProgrammerProfileViewSet(viewsets.ModelViewSet):
     queryset = ProgrammerProfile.objects.all()
@@ -61,3 +68,20 @@ class ProjectTechnologyViewSet(viewsets.ModelViewSet):
 class CalendarIntegrationViewSet(viewsets.ModelViewSet):
     queryset = CalendarIntegration.objects.all()
     serializer_class = CalendarIntegrationSerializer
+
+class HomePageView(TemplateView):
+    template_name = 'api/index.html'
+
+    def get_context_data(self, **kwargs):
+        content = super().get_context_data(**kwargs)
+        return content
+
+class AddProgrammerProfile(CreateView):
+    model = ProgrammerProfile
+    form_class = ProgrammerProfileForm
+    template_name = 'api/programmer_form.html'
+
+class AddClientProfile(CreateView):
+    model = ClientProfile
+    form_class = ClientProfileForm
+    template_name = 'api/client_form.html'

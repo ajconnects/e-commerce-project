@@ -1,13 +1,19 @@
 from rest_framework import serializers
 from .models import *
 
+class CategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = ['id', 'name']
+
 class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, style={'input_type': 'password'})
-    
+
     class Meta:
         model = User
         fields = ['id', 'username', 'email', 'is_programmer', 'is_client', 'phone_number', 'profile_picture', 'password']
         extra_kwargs = {'password': {'write_only': True}}
+        #fields =  '__all__'
 
     def create(self, validated_data):
         password = validated_data.pop('password', None)
@@ -36,10 +42,37 @@ class ProgrammerProfileSerializer(serializers.ModelSerializer):
 class ClientProfileSerializer(serializers.ModelSerializer):
     user = UserSerializer()
 
+    categories = CategorySerializer(many=True, read_only=True)
+    category_ids = serializers.PrimaryKeyRelatedField(
+        many=True, write_only=True, queryset=Category.objects.all(), source='categories'
+    )
+
     class Meta:
         model = ClientProfile
-        fields = ['user', 'company_name', 'bio', 'website']
+        fields = ['user', 'company_name', 'bio', 'website', 'categories', 'category_ids']
         #fields = '__all__'
+
+    def create(self, validated_data):
+        user_data = validated_data.pop('user')
+        category_ids = validated_data.pop('categories', [])
+
+        user = User.objects.create(**user_data)
+        client_profile = ClientProfile.objects.create(user=user, **validated_data)
+        client_profile.categories.set(category_ids)
+
+        return client_profile
+
+    def update(self, instance, validated_data):
+        user_data = validated_data.pop('user')
+        category_ids = validated_data.pop('categories', [])
+
+        user = instance.user
+        for attr, value in user_data.items():
+            setattr(user, attr, value)
+        user.save()
+
+        instance.categories.set(category_ids)
+        return super().update(instance, validated_data)
 
 class BookingSerializer(serializers.ModelSerializer):
     class Meta:
